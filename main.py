@@ -1,13 +1,10 @@
 
 
 import pandas as pd
-import numpy
 import torch
 from torch import nn
 import torch.utils.data as Data
 from torch.nn import init
-import torchvision
-import torchvision.transforms as transforms
 import tool
 
 class LinearNet(nn.Module):
@@ -34,12 +31,12 @@ num_hidden = 6
 feature = pd.read_csv('data.csv', header=0, usecols=range(num_feature))
 label = pd.read_csv('data.csv', header=0, usecols=[num_feature])
 
-# num_feature = 13
+# num_feature = 10
 # num_label = 5
 # batch_size = 50
 # lr = 0.05
 # num_epochs = 10
-# num_hidden = 12
+# num_hidden = 10
 # feature = pd.read_csv('NewData3.csv', header=0, usecols=range(num_feature))
 # label = pd.read_csv('NewData3.csv', header=0, usecols=[num_feature])
 
