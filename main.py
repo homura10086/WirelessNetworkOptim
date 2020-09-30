@@ -22,23 +22,23 @@ class LinearNet(nn.Module):
 seed = 0
 torch.manual_seed(seed)
 
-num_feature = 3
-num_label = 6
-batch_size = 10
-lr = 0.008
-num_epochs = 30
-num_hidden = 6
-feature = pd.read_csv('data.csv', header=0, usecols=range(num_feature))
-label = pd.read_csv('data.csv', header=0, usecols=[num_feature])
+# num_feature = 3
+# num_label = 6
+# batch_size = 10
+# lr = 0.008
+# num_epochs = 30
+# num_hidden = 6
+# feature = pd.read_csv('data.csv', header=0, usecols=range(num_feature))
+# label = pd.read_csv('data.csv', header=0, usecols=[num_feature])
 
-# num_feature = 10
-# num_label = 5
-# batch_size = 50
-# lr = 0.05
-# num_epochs = 10
-# num_hidden = 10
-# feature = pd.read_csv('NewData3.csv', header=0, usecols=range(num_feature))
-# label = pd.read_csv('NewData3.csv', header=0, usecols=[num_feature])
+num_feature = 10
+num_label = 5
+batch_size = 100
+lr = 0.05
+num_epochs = 10
+num_hidden = 10
+feature = pd.read_csv('NewData3.csv', header=0, usecols=range(num_feature))
+label = pd.read_csv('NewData3.csv', header=0, usecols=[num_feature])
 
 features = torch.Tensor(feature.values)
 labels = torch.LongTensor(label.values).squeeze()
@@ -49,8 +49,6 @@ num_example = len(dataset)
 num_train = int(0.8 * num_example)
 num_test = num_example - num_train
 train_dataset, test_dataset = torch.utils.data.random_split(dataset, [num_train, num_test])
-
-print(num_train, num_test)
 
 # 把 dataset 放入 DataLoader
 train_iter = Data.DataLoader(
