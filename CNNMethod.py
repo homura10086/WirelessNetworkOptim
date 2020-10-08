@@ -14,44 +14,73 @@ class LeNet(nn.Module):
         super(LeNet, self).__init__()
         self.conv = nn.Sequential(
             nn.Conv2d(1, 6, 3),  # in_channels, out_channels, kernel_size 输入28*28 输出24*24 new输入18*10
+            # nn.Dropout(0.5),
             nn.Sigmoid(),
             nn.MaxPool2d(2, 2),  # kernel_size, stride 输入24*24 输出12*12
-            nn.Conv2d(6, 12, 3),  # 输入12*12 输出8*8
-            nn.Sigmoid(),
-            nn.MaxPool2d(2, 2)  # 输入8*8 输出4*4 通道维16
+            # nn.Conv2d(6, 12, 3),  # 输入12*12 输出8*8
+            # nn.Sigmoid(),
+            # nn.MaxPool2d(2, 2)  # 输入8*8 输出4*4 通道维16
         )
         self.fc = nn.Sequential(
-            nn.Linear(36, 12),  # 全连接层从16*4*4降维到10
+            # nn.Linear(60, 30),
+            nn.Linear(48, 24),
+            # nn.Dropout(0.5),
+            nn.Sigmoid(),
+            # nn.Linear(30, 15),
+            nn.Linear(24, 12),
+            # nn.Dropout(0.5),
             nn.Sigmoid(),
             nn.Linear(12, 5)
         )
 
     def forward(self, x):
         output1 = self.conv(x)
+        # output = self.fc(x.view(x.shape[0], -1))
         output = self.fc(output1.view(x.shape[0], -1))
         return output
 
-num_RAN = 10000
-num_cell = 18
+seed = 1
+torch.manual_seed(seed)
+
+num_RAN = 30000
+num_cell = 6
 num_feature = 10
 rate_test = 0.2
 batch_size = 256
-lr = 0.001
-num_epochs = 50
+lr = 0.01
+num_epochs = 200
 device = 'cuda'
 
-# 数据处理
-feature = pd.read_csv('NewData5.csv', header=0, usecols=range(num_feature))
-label = pd.read_csv('NewData5.csv', header=0, usecols=[num_feature])
+# 数据处理for Data1007
+feature = pd.read_csv('Data1007.csv', header=0, usecols=range(num_feature))
+label = pd.read_csv('Data1007.csv', header=0, usecols=[num_feature])
 feature_normalize = np.zeros((num_RAN * num_cell, num_feature))
 for i in range(num_feature):
     operation_feature = np.array(feature[feature.columns[i]])
     feature_normalize[:, i] = tool.minmaxscaler(operation_feature)
 features = torch.from_numpy(feature_normalize).reshape(num_RAN, 1, num_cell, num_feature)
 label = torch.LongTensor(label.values).squeeze()
-labels = torch.zeros(10000, dtype=int)
-for i in range(10000):
-    labels[i] = label[i * 18]
+labels = torch.zeros(num_RAN, dtype=int)
+for i in range(num_RAN):
+    for j in range(6):
+        if label[i * num_cell + j] != 0:
+            labels[i] = label[i * num_cell + j]
+            break
+        if j == 5:
+            labels[i] = 0
+
+# # 数据处理for Data1005
+# feature = pd.read_csv('Data1005.csv', header=0, usecols=range(num_feature))
+# label = pd.read_csv('Data1005.csv', header=0, usecols=[num_feature])
+# feature_normalize = np.zeros((num_RAN * num_cell, num_feature))
+# for i in range(num_feature):
+#     operation_feature = np.array(feature[feature.columns[i]])
+#     feature_normalize[:, i] = tool.minmaxscaler(operation_feature)
+# features = torch.from_numpy(feature_normalize).reshape(num_RAN, 1, num_cell, num_feature)
+# label = torch.LongTensor(label.values).squeeze()
+# labels = torch.zeros(num_RAN, dtype=int)
+# for i in range(num_RAN):
+#     labels[i] = label[i * num_cell]
 
 # 数据集处理
 dataset = Data.TensorDataset(features, labels)
@@ -75,3 +104,6 @@ net = LeNet()
 
 optimizer = torch.optim.Adam(net.parameters(), lr=lr)
 tool.train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epochs)
+
+# 模型保存
+# torch.save(net.state_dict(), './NetParam.pkl')

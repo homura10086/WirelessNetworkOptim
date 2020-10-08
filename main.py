@@ -1,11 +1,11 @@
 
-
 import pandas as pd
 import torch
 from torch import nn
 import torch.utils.data as Data
 from torch.nn import init
 import tool
+
 
 class LinearNet(nn.Module):
     def __init__(self, num_inputs, num_outputs, num_hidden):

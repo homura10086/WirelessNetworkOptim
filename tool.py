@@ -1,6 +1,9 @@
+
 import torch
 import numpy as np
 import time
+import matplotlib.pyplot as plt
+
 
 def evaluate_accuracy(data_iter, net):
     acc_sum, n = 0.0, 0
@@ -34,6 +37,8 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
     print("training on ", device)
     loss = torch.nn.CrossEntropyLoss()
     batch_count = 0
+    train_acc = []
+    test_acc = []
     for epoch in range(num_epochs):
         train_l_sum, train_acc_sum, n, start = 0.0, 0.0, 0, time.time()
         for X, y in train_iter:
@@ -48,9 +53,42 @@ def train_ch5(net, train_iter, test_iter, batch_size, optimizer, device, num_epo
             train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
             n += y.shape[0]
             batch_count += 1
-        test_acc = evaluate_accuracy_2(test_iter, net)
+        test_acc.append(evaluate_accuracy_2(test_iter, net))
+        train_acc.append(train_acc_sum/n)
         print('epoch %d, loss %.4f, train acc %.3f, test acc %.3f, time %.1f sec'
-              % (epoch + 1, train_l_sum / batch_count, train_acc_sum / n, test_acc, time.time() - start))
+              % (epoch + 1, train_l_sum / batch_count, train_acc[epoch], test_acc[epoch], time.time() - start))
+
+    # 绘图
+    plt.plot(range(num_epochs)[:24], test_acc[:24], linewidth=2, color='olivedrab', label='test data')
+    plt.plot(range(num_epochs)[:24], train_acc[:24], linewidth=2, color='chocolate', linestyle='--', label='train data')
+    plt.legend(loc='lower right')
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+
+    test_acc_below = test_acc[:24]
+    test_max_below = np.argmax(test_acc_below).item()
+    show_max = '[' + str(test_max_below) + ', ' + str(round(test_acc_below[test_max_below], 2)) + ']'
+    # 以●绘制最大值点和最小值点的位置
+    plt.plot(test_max_below, test_acc_below[test_max_below], 'ko')
+    plt.annotate(show_max, xy=(test_max_below, test_acc_below[test_max_below]), xytext=(test_max_below, test_acc_below[test_max_below]))
+
+    plt.grid()
+    plt.show()
+    plt.plot(range(num_epochs)[25:], test_acc[25:], linewidth=2, color='olivedrab', label='test data')
+    plt.plot(range(num_epochs)[25:], train_acc[25:], linewidth=2, color='chocolate', linestyle='--', label='train data')
+    plt.legend(loc='lower right')
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+
+    test_acc_above = test_acc[25:]
+    test_max_above = np.argmax(test_acc_above).item()
+    show_max = '[' + str(test_max_above + 25) + ', ' + str(round(test_acc_above[test_max_above], 2)) + ']'
+    # 以●绘制最大值点和最小值点的位置
+    plt.plot(test_max_above + 25, test_acc_above[test_max_above], 'ko')
+    plt.annotate(show_max, xy=(test_max_above + 25, test_acc_above[test_max_above]), xytext=(test_max_above + 25, test_acc_above[test_max_above]))
+
+    plt.grid()
+    plt.show()
 
 def minmaxscaler(data):
     min = np.amin(data)
